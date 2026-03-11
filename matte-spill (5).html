@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tegn-Detektiven 🔍</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #4FC3F7;
+    --sun: #FFD54F;
+    --grass: #66BB6A;
+    --coral: #FF7043;
+    --purple: #AB47BC;
+    --navy: #1A237E;
+    --cream: #FFFDE7;
+    --eq-color: #1976D2;
+    --lt-color: #E53935;
+    --gt-color: #43A047;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(160deg, #e0f7fa 0%, #b3e5fc 40%, #e8f5e9 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    width: 100%;
+    background: linear-gradient(90deg, var(--navy) 0%, #283593 100%);
+    padding: 14px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    color: var(--sun);
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 #b7860b;
+  }
+  .score-box {
+    display: flex; gap: 10px; align-items: center;
+  }
+  .score-pill {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 30px;
+    padding: 4px 14px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .score-pill span { font-size: 1.2rem; }
+
+  /* ---- PROGRESS BAR ---- */
+  .progress-bar-wrap {
+    width: 92%;
+    max-width: 600px;
+    margin: 14px auto 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 20px;
+    height: 14px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #66BB6A, #4CAF50);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #37474F;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  /* ---- LEVEL BADGE ---- */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--purple), #7B1FA2);
+    color: #fff;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin: 0 auto 10px;
+    box-shadow: 0 3px 10px rgba(123,31,162,0.3);
+  }
+
+  /* ---- GAME CARD ---- */
+  .game-card {
+    background: #fff;
+    border-radius: 28px;
+    width: 92%;
+    max-width: 580px;
+    padding: 24px 20px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--coral), var(--sun), var(--grass), var(--sky), var(--purple));
+  }
+
+  .instruction {
+    text-align: center;
+    font-size: 1.05rem;
+    color: #546E7A;
+    font-weight: 700;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  /* ---- EQUATION DISPLAY ---- */
+  .equation-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 22px;
+    flex-wrap: nowrap;
+  }
+
+  .num-box {
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+    border: 3px solid #90CAF9;
+    border-radius: 18px;
+    min-width: 80px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--navy);
+    box-shadow: 0 4px 12px rgba(33,150,243,0.15);
+    position: relative;
+    padding: 4px 10px;
+  }
+  .num-box.has-expr {
+    font-size: 1.3rem;
+    min-width: 100px;
+  }
+  .num-box .expr-hint {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #78909C;
+    position: absolute;
+    bottom: 4px;
+  }
+
+  .sign-slot {
+    width: 80px;
+    height: 80px;
+    border: 3px dashed #B0BEC5;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    color: #B0BEC5;
+    background: #FAFAFA;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .sign-slot.filled {
+    border-style: solid;
+    background: linear-gradient(135deg, #fff, #F3F4FF);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  }
+  .sign-slot.filled.eq  { border-color: var(--eq-color); color: var(--eq-color); background: #E3F2FD; }
+  .sign-slot.filled.lt  { border-color: var(--lt-color); color: var(--lt-color); background: #FFEBEE; }
+  .sign-slot.filled.gt  { border-color: var(--gt-color); color: var(--gt-color); background: #E8F5E9; }
+
+  /* ---- BUTTONS ---- */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 0 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .sign-btn {
+    width: 90px;
+    height: 90px;
+    border-radius: 22px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4rem;
+    cursor: pointer;
+    transition: all 0.12s;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18);
+    position: relative;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .sign-btn:active {
+    top: 4px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+  }
+  .sign-btn .btn-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+  }
+
+  .btn-eq { background: linear-gradient(135deg, #42A5F5, #1976D2); color: #fff; }
+  .btn-lt { background: linear-gradient(135deg, #EF5350, #C62828); color: #fff; }
+  .btn-gt { background: linear-gradient(135deg, #66BB6A, #2E7D32); color: #fff; }
+
+  .btn-eq:hover { background: linear-gradient(135deg, #64B5F6, #1565C0); }
+  .btn-lt:hover { background: linear-gradient(135deg, #E57373, #B71C1C); }
+  .btn-gt:hover { background: linear-gradient(135deg, #81C784, #1B5E20); }
+
+  /* ---- CHECK / NEXT BUTTONS ---- */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .action-btn {
+    padding: 13px 28px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+    position: relative; top: 0;
+  }
+  .action-btn:active { top: 4px; box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+  .btn-check {
+    background: linear-gradient(135deg, var(--sun), #F9A825);
+    color: var(--navy);
+    min-width: 140px;
+  }
+  .btn-check:disabled { opacity: 0.5; cursor: not-allowed; top: 0; }
+  .btn-next {
+    background: linear-gradient(135deg, var(--grass), #2E7D32);
+    color: #fff;
+    min-width: 140px;
+  }
+  .btn-next.hidden { display: none; }
+  .btn-check.hidden { display: none; }
+  .btn-clear {
+    background: linear-gradient(135deg, #90A4AE, #546E7A);
+    color: #fff;
+    padding: 13px 18px;
+  }
+
+  /* ---- FEEDBACK ---- */
+  .feedback-box {
+    text-align: center;
+    min-height: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 14px 0 4px;
+  }
+  .feedback-msg {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .feedback-msg.show { opacity: 1; transform: scale(1); }
+  .feedback-msg.correct { color: var(--grass); }
+  .feedback-msg.wrong   { color: var(--coral); }
+  .feedback-sub {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #78909C;
+    margin-top: 2px;
+  }
+
+  /* ---- HINT BOX ---- */
+  .hint-box {
+    background: linear-gradient(135deg, #FFF8E1, #FFF3CD);
+    border: 2px solid var(--sun);
+    border-radius: 16px;
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #5D4037;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+    line-height: 1.5;
+  }
+  .hint-box.show { display: block; }
+
+  /* ---- STARS ---- */
+  .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin: 6px 0;
+  }
+  .star { font-size: 1.6rem; transition: all 0.3s; filter: grayscale(1) opacity(0.3); }
+  .star.earned { filter: none; animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  @keyframes starPop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+
+  /* ---- SIGN LEGEND ---- */
+  .legend {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 12px auto 0;
+    width: 92%;
+    max-width: 580px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #37474F;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    flex: 1;
+    min-width: 100px;
+    max-width: 160px;
+    justify-content: center;
+  }
+  .legend-sym {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+  }
+  .sym-eq { color: var(--eq-color); }
+  .sym-lt { color: var(--lt-color); }
+  .sym-gt { color: var(--gt-color); }
+
+  /* ---- CELEBRATION OVERLAY ---- */
+  .celebration {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,35,126,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .celebration.show { opacity: 1; pointer-events: all; }
+  .celebration-card {
+    background: #fff;
+    border-radius: 30px;
+    padding: 36px 32px;
+    text-align: center;
+    max-width: 340px;
+    width: 88%;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .celebration-emoji { font-size: 4rem; margin-bottom: 8px; }
+  .celebration-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .celebration-score {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #546E7A;
+    margin-bottom: 20px;
+  }
+  .btn-restart {
+    background: linear-gradient(135deg, var(--coral), #BF360C);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 36px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+    position: relative; top: 0;
+    transition: all 0.12s;
+    width: 100%;
+  }
+  .btn-restart:active { top: 4px; box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+
+  /* ---- CONFETTI ---- */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: fall linear forwards;
+    pointer-events: none;
+    z-index: 200;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 380px) {
+    .sign-btn { width: 78px; height: 78px; font-size: 2rem; }
+    .num-box  { min-width: 68px; min-height: 68px; font-size: 1.7rem; }
+    .sign-slot { width: 68px; height: 68px; font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔍 Tegn-Detektiven</div>
+  <div class="score-box">
+    <div class="score-pill"><span>⭐</span><span id="scoreDisplay">0</span></div>
+    <div class="score-pill"><span>🎯</span><span id="streakDisplay">0</span></div>
+  </div>
+</header>
+
+<div class="progress-bar-wrap" id="gameArea" style="display:none">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+<div class="progress-label" id="progressLabel" style="display:none">Oppgave 1 av 10</div>
+
+<!-- LEVEL SELECT SCREEN -->
+<div id="levelSelectScreen" style="display:flex; flex-direction:column; align-items:center; width:100%; padding: 16px 16px 30px;">
+  <div style="font-family:'Fredoka One',cursive; font-size:1.5rem; color:#1A237E; margin: 10px 0 4px; text-align:center;">Velg vanskelighetsgrad!</div>
+  <div style="font-size:0.9rem; color:#546E7A; font-weight:700; margin-bottom:18px; text-align:center;">10 oppgaver per nivå</div>
+  <div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:500px;">
+    <button onclick="startLevel(0)" style="background:linear-gradient(135deg,#FFB74D,#E65100);border:none;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.15);position:relative;top:0;transition:all 0.12s;text-align:left;" onmousedown="this.style.top='4px';this.style.boxShadow='0 1px 0 rgba(0,0,0,0.15)'" onmouseup="this.style.top='0';this.style.boxShadow='0 5px 0 rgba(0,0,0,0.15)'">
+      <span style="font-size:2.4rem;">🐣</span>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;">Nybegynner</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.85);font-weight:700;">Tall fra 1 til 10 – perfekt å starte med!</div></div>
+    </button>
+    <button onclick="startLevel(1)" style="background:linear-gradient(135deg,#81C784,#2E7D32);border:none;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.15);position:relative;top:0;transition:all 0.12s;text-align:left;" onmousedown="this.style.top='4px';this.style.boxShadow='0 1px 0 rgba(0,0,0,0.15)'" onmouseup="this.style.top='0';this.style.boxShadow='0 5px 0 rgba(0,0,0,0.15)'">
+      <span style="font-size:2.4rem;">🌱</span>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;">Lett</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.85);font-weight:700;">Tall fra 1 til 20</div></div>
+    </button>
+    <button onclick="startLevel(2)" style="background:linear-gradient(135deg,#4FC3F7,#0277BD);border:none;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.15);position:relative;top:0;transition:all 0.12s;text-align:left;" onmousedown="this.style.top='4px';this.style.boxShadow='0 1px 0 rgba(0,0,0,0.15)'" onmouseup="this.style.top='0';this.style.boxShadow='0 5px 0 rgba(0,0,0,0.15)'">
+      <span style="font-size:2.4rem;">🌿</span>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;">Middels</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.85);font-weight:700;">Tall opp til 100</div></div>
+    </button>
+    <button onclick="startLevel(3)" style="background:linear-gradient(135deg,#BA68C8,#6A1B9A);border:none;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.15);position:relative;top:0;transition:all 0.12s;text-align:left;" onmousedown="this.style.top='4px';this.style.boxShadow='0 1px 0 rgba(0,0,0,0.15)'" onmouseup="this.style.top='0';this.style.boxShadow='0 5px 0 rgba(0,0,0,0.15)'">
+      <span style="font-size:2.4rem;">🌳</span>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;">Vanskelig</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.85);font-weight:700;">Regnestykker med +, − og ×</div></div>
+    </button>
+    <button onclick="startLevel(4)" style="background:linear-gradient(135deg,#EF5350,#B71C1C);border:none;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,0.15);position:relative;top:0;transition:all 0.12s;text-align:left;" onmousedown="this.style.top='4px';this.style.boxShadow='0 1px 0 rgba(0,0,0,0.15)'" onmouseup="this.style.top='0';this.style.boxShadow='0 5px 0 rgba(0,0,0,0.15)'">
+      <span style="font-size:2.4rem;">🔥</span>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;">Ekspert</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.85);font-weight:700;">Lengre uttrykk og store tall</div></div>
+    </button>
+  </div>
+</div>
+
+<div id="gameArea2" style="display:none; flex-direction:column; align-items:center; width:100%;">
+<div style="text-align:center; margin: 4px 0 8px;">
+  <div class="level-badge" id="levelBadge">🌱 Lett</div>
+  <div class="stars-row" id="starsRow">
+    <span class="star" id="s1">⭐</span>
+    <span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span>
+  </div>
+</div>
+
+<div class="game-card">
+  <div class="instruction" id="instruction">Hvilket tegn passer? Trykk på riktig tegn!</div>
+  <button onclick="showLevelSelect()" style="position:absolute;top:14px;right:14px;background:none;border:2px solid #CFD8DC;border-radius:50px;padding:5px 13px;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;color:#78909C;cursor:pointer;">← Nivåer</button>
+
+  <div class="equation-row">
+    <div class="num-box" id="leftBox">?</div>
+    <div class="sign-slot" id="signSlot">?</div>
+    <div class="num-box" id="rightBox">?</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="sign-btn btn-lt" onclick="selectSign('<')">&lt;</button>
+    <button class="sign-btn btn-eq" onclick="selectSign('=')">=</button>
+    <button class="sign-btn btn-gt" onclick="selectSign('>')">&gt;</button>
+  </div>
+
+  <div class="feedback-box">
+    <div class="feedback-msg" id="feedbackMsg"></div>
+    <div class="feedback-sub" id="feedbackSub"></div>
+  </div>
+
+  <div class="hint-box" id="hintBox"></div>
+
+  <div class="action-row">
+    <button class="action-btn btn-clear" onclick="clearSign()">🗑️ Slett</button>
+    <button class="action-btn btn-check" id="checkBtn" onclick="checkAnswer()" disabled>✅ Sjekk!</button>
+    <button class="action-btn btn-next hidden" id="nextBtn" onclick="nextQuestion()">Neste ➡️</button>
+  </div>
+</div>
+</div>
+
+
+
+<!-- CELEBRATION OVERLAY -->
+<div class="celebration" id="celebration">
+  <div class="celebration-card">
+    <div class="celebration-emoji" id="celebEmoji">🏆</div>
+    <div class="celebration-title" id="celebTitle">Bra jobbet!</div>
+    <div class="celebration-score" id="celebScore"></div>
+    <button class="btn-restart" onclick="restartGame()">🎮 Velg nivå igjen!</button>
+  </div>
+</div>
+
+<script>
+// ─── LEVELS & STATE ──────────────────────────────────────────────────────────
+
+const TOTAL_QUESTIONS = 10;
+let currentQ = 0, score = 0, streak = 0, maxStreak = 0, wrongCount = 0;
+let selectedSign = null, answered = false, questions = [], chosenLevel = null;
+
+function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+const LEVELS = [
+  {
+    id: 0, name: "🐣 Nybegynner", desc: "Tall fra 1 til 10",
+    color: "#FFB74D", dark: "#E65100",
+    gen() {
+      const a = rnd(1, 10);
+      const pick = Math.random();
+      let b = pick < 0.35 ? a : pick < 0.68 ? Math.min(10, a+rnd(1,3)) : Math.max(1, a-rnd(1,3));
+      return { left: String(a), right: String(b), leftVal: a, rightVal: b };
+    }
+  },
+  {
+    id: 1, name: "🌱 Lett", desc: "Tall fra 1 til 20",
+    color: "#81C784", dark: "#2E7D32",
+    gen() {
+      const a = rnd(1, 20);
+      const pick = Math.random();
+      let b = pick < 0.3 ? a : pick < 0.65 ? Math.min(20, a+rnd(1,8)) : Math.max(1, a-rnd(1,8));
+      return { left: String(a), right: String(b), leftVal: a, rightVal: b };
+    }
+  },
+  {
+    id: 2, name: "🌿 Middels", desc: "Tall opp til 100",
+    color: "#4FC3F7", dark: "#0277BD",
+    gen() {
+      const a = rnd(10, 99);
+      const b = Math.random() < 0.25 ? a : rnd(10, 99);
+      return { left: String(a), right: String(b), leftVal: a, rightVal: b };
+    }
+  },
+  {
+    id: 3, name: "🌳 Vanskelig", desc: "Regnestykker med +, − og ×",
+    color: "#BA68C8", dark: "#6A1B9A",
+    gen() {
+      const ops = [
+        () => { const a=rnd(1,9),  b=rnd(1,9);  return { str:`${a}+${b}`, val:a+b }; },
+        () => { const a=rnd(5,20), b=rnd(1,a);  return { str:`${a}−${b}`, val:a-b }; },
+        () => { const a=rnd(2,5),  b=rnd(2,5);  return { str:`${a}×${b}`, val:a*b }; },
+      ];
+      const L=ops[rnd(0,2)](), R=ops[rnd(0,2)]();
+      return { left:L.str, right:R.str, leftVal:L.val, rightVal:R.val, isExpr:true };
+    }
+  },
+  {
+    id: 4, name: "🔥 Ekspert", desc: "Lengre uttrykk og store tall",
+    color: "#EF5350", dark: "#B71C1C",
+    gen() {
+      const ops = [
+        () => { const a=rnd(10,50),b=rnd(1,30); return { str:`${a}+${b}`, val:a+b }; },
+        () => { const a=rnd(20,80),b=rnd(1,a);  return { str:`${a}−${b}`, val:a-b }; },
+        () => { const a=rnd(3,9),  b=rnd(3,9);  return { str:`${a}×${b}`, val:a*b }; },
+        () => { const a=rnd(2,5),  b=rnd(1,4),  c=rnd(1,9);
+                return { str:`${a}×${b}+${c}`, val:a*b+c }; },
+      ];
+      const L=ops[rnd(0,3)](), R=ops[rnd(0,3)]();
+      return { left:L.str, right:R.str, leftVal:L.val, rightVal:R.val, isExpr:true };
+    }
+  },
+];
+
+function buildQuestions() {
+  questions = [];
+  const lvl = LEVELS[chosenLevel];
+  for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+    const q = lvl.gen();
+    q.level = chosenLevel;
+    questions.push(q);
+  }
+}
+
+// ─── LEVEL SELECT SCREEN ─────────────────────────────────────────────────────
+
+function showLevelSelect() {
+  document.getElementById('levelSelectScreen').style.display = 'flex';
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('progressLabel').style.display = 'none';
+  document.getElementById('gameArea2').style.display = 'none';
+}
+
+function startLevel(idx) {
+  chosenLevel = idx;
+  document.getElementById('levelSelectScreen').style.display = 'none';
+  document.getElementById('gameArea').style.display = '';
+  document.getElementById('progressLabel').style.display = '';
+  document.getElementById('gameArea2').style.display = 'flex';
+  score = 0; streak = 0; maxStreak = 0; wrongCount = 0; currentQ = 0;
+  updateScoreDisplay();
+  ['s1','s2','s3'].forEach(id => document.getElementById(id).classList.remove('earned'));
+  buildQuestions();
+  renderQuestion();
+}
+
+function correctSign(q) {
+  if (q.leftVal < q.rightVal) return '<';
+  if (q.leftVal > q.rightVal) return '>';
+  return '=';
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  answered = false;
+  selectedSign = null;
+
+  // Level badge
+  document.getElementById('levelBadge').textContent = LEVELS[chosenLevel].name;
+
+  // Boxes
+  const lb = document.getElementById('leftBox');
+  const rb = document.getElementById('rightBox');
+  lb.textContent = q.left;
+  rb.textContent = q.right;
+  lb.classList.toggle('has-expr', !!q.isExpr);
+  rb.classList.toggle('has-expr', !!q.isExpr);
+
+  // Sign slot
+  const slot = document.getElementById('signSlot');
+  slot.textContent = '?';
+  slot.className = 'sign-slot';
+
+  // Feedback
+  hideFeedback();
+  document.getElementById('hintBox').classList.remove('show');
+
+  document.getElementById('checkBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('checkBtn').disabled = true;
+
+  // Progress
+  const pct = (currentQ / TOTAL_QUESTIONS) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent =
+    `Oppgave ${currentQ + 1} av ${TOTAL_QUESTIONS}`;
+}
+
+function selectSign(sign) {
+  if (answered) return;
+  selectedSign = sign;
+  const slot = document.getElementById('signSlot');
+  slot.textContent = sign === '<' ? '<' : sign === '>' ? '>' : '=';
+  slot.className = 'sign-slot filled ' + (sign === '=' ? 'eq' : sign === '<' ? 'lt' : 'gt');
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function clearSign() {
+  if (answered) return;
+  selectedSign = null;
+  const slot = document.getElementById('signSlot');
+  slot.textContent = '?';
+  slot.className = 'sign-slot';
+  document.getElementById('checkBtn').disabled = true;
+}
+
+// ─── LOGIC ───────────────────────────────────────────────────────────────────
+
+function checkAnswer() {
+  if (!selectedSign || answered) return;
+  answered = true;
+
+  const q = questions[currentQ];
+  const correct = correctSign(q);
+  const isRight = selectedSign === correct;
+
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+
+  if (isRight) {
+    score += 10 + (streak >= 2 ? 5 : 0); // bonus for streak
+    streak++;
+    maxStreak = Math.max(maxStreak, streak);
+    updateScoreDisplay();
+    showFeedback(true, q);
+    updateStars();
+    if (streak >= 3) launchConfetti(8);
+  } else {
+    wrongCount++;
+    streak = 0;
+    updateScoreDisplay();
+    showFeedback(false, q);
+    showHint(q, correct);
+  }
+}
+
+function showFeedback(correct, q) {
+  const msgs = correct
+    ? ["🎉 Riktig! Strålende!", "✅ Ja! Kjempebra!", "🌟 Perfekt!", "👏 Riktig! Du er flink!", "🚀 Supert! Riktig!"]
+    : ["❌ Ikke helt riktig...", "🤔 Prøv å tenke igjen!", "😬 Nesten! Se hintet.", "💪 Du klarer det neste!"];
+
+  const subs = correct && streak > 1
+    ? [`🔥 ${streak} på rad! +5 bonuspoeng!`]
+    : [];
+
+  const msg = document.getElementById('feedbackMsg');
+  const sub = document.getElementById('feedbackSub');
+
+  msg.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  msg.className = 'feedback-msg show ' + (correct ? 'correct' : 'wrong');
+  sub.textContent = subs.length ? subs[0] : '';
+}
+
+function hideFeedback() {
+  const msg = document.getElementById('feedbackMsg');
+  msg.className = 'feedback-msg';
+  document.getElementById('feedbackSub').textContent = '';
+}
+
+function showHint(q, correct) {
+  const hintBox = document.getElementById('hintBox');
+  let txt = '';
+  if (correct === '=') {
+    txt = `💡 Tips: ${q.leftVal} og ${q.rightVal} er <strong>like store</strong>, så vi bruker = (likhetstegnet)`;
+  } else if (correct === '<') {
+    txt = `💡 Tips: ${q.leftVal} er <strong>mindre enn</strong> ${q.rightVal}, så vi bruker &lt; (mindre enn-tegnet). Det spisse enden peker mot det minste tallet!`;
+  } else {
+    txt = `💡 Tips: ${q.leftVal} er <strong>større enn</strong> ${q.rightVal}, så vi bruker &gt; (større enn-tegnet). Det åpne enden vender mot det største tallet!`;
+  }
+  hintBox.innerHTML = txt;
+  hintBox.classList.add('show');
+}
+
+function updateScoreDisplay() {
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('streakDisplay').textContent = streak;
+}
+
+function updateStars() {
+  // Stars based on correct ratio
+  const done = currentQ + 1;
+  const correct = done - wrongCount;
+  const ratio = correct / done;
+  ['s1','s2','s3'].forEach((id, i) => {
+    const star = document.getElementById(id);
+    const threshold = i === 0 ? 0.4 : i === 1 ? 0.65 : 0.9;
+    if (ratio >= threshold && !star.classList.contains('earned')) {
+      setTimeout(() => star.classList.add('earned'), i * 150);
+    }
+  });
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= TOTAL_QUESTIONS) {
+    showCelebration();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ─── CELEBRATION ─────────────────────────────────────────────────────────────
+
+function showCelebration() {
+  const cel = document.getElementById('celebration');
+  cel.classList.add('show');
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = 'Ferdig! 🎉';
+
+  const correct = TOTAL_QUESTIONS - wrongCount;
+  const pct = Math.round((correct / TOTAL_QUESTIONS) * 100);
+
+  let emoji = pct === 100 ? '🏆' : pct >= 80 ? '🌟' : pct >= 60 ? '😊' : '💪';
+  let title = pct === 100 ? 'Perfekt!' : pct >= 80 ? 'Strålende!' : pct >= 60 ? 'Bra jobbet!' : 'Fortsett øve!';
+
+  document.getElementById('celebEmoji').textContent = emoji;
+  document.getElementById('celebTitle').textContent = title;
+  document.getElementById('celebScore').innerHTML =
+    `Du fikk <strong>${correct} av ${TOTAL_QUESTIONS}</strong> riktig<br>
+     Poeng: <strong>${score}</strong> &nbsp;|&nbsp; Beste rekke: <strong>${maxStreak}</strong>`;
+
+  launchConfetti(30);
+}
+
+function restartGame() {
+  document.getElementById('celebration').classList.remove('show');
+  showLevelSelect();
+}
+
+// ─── CONFETTI ────────────────────────────────────────────────────────────────
+
+function launchConfetti(n) {
+  const colors = ['#FFD54F','#FF7043','#66BB6A','#42A5F5','#AB47BC','#FF4081','#00BCD4'];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}vw;
+      top: -10px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${6+Math.random()*8}px;
+      height: ${6+Math.random()*8}px;
+      animation-duration: ${1.5 + Math.random()*2}s;
+      animation-delay: ${Math.random()*0.5}s;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+showLevelSelect();
+</script>
+</body>
+</html>
